@@ -124,7 +124,11 @@ export async function pollJobs({ owner, repo, id }) {
         })
         // TODO all jobs
         const job = data.data.jobs[0]
-        if (spinners === null) {
+        if (
+            spinners === null ||
+            Object.keys(spinners.spinners).length !== job.steps.length
+        ) {
+            // TODO or not equal
             const obj = Object.assign(
                 {},
                 ...job.steps.map((x) => ({
