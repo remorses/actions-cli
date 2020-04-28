@@ -8,6 +8,7 @@ import * as logSymbols from 'log-symbols'
 import Multispinner from 'multispinner'
 import Spinners from 'multispinner/lib/spinners'
 import ora from 'ora'
+import logUpdate from 'log-update'
 import path from 'path'
 import { Argv } from 'yargs'
 import {
@@ -140,6 +141,7 @@ export async function pollJobs({ owner, repo, id }) {
                 // init spinners
                 spinners = new Multispinner(obj, {
                     clear: false,
+                    update: logUpdate,
                     ...cliSpinner,
                 })
             } else {
