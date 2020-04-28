@@ -45,7 +45,7 @@ const FetchCommand = {
             )
             gitRepoUrl = ''
         }
-        const lastPushedSha = getLastPushedCommitSha()
+        let lastPushedSha = getLastPushedCommitSha()
         const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
 
         const spinner = ora('fetching state').start()
@@ -72,6 +72,7 @@ const FetchCommand = {
                     )}'`,
                 })
                 await sleep(3000)
+                lastPushedSha = getLastPushedCommitSha()
                 continue
             }
 
