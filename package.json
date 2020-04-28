@@ -19,7 +19,8 @@
         "test": "NODE_ENV=test mocha --colors --exit",
         "example": "parcel serve --no-autoinstall example/index.html",
         "compile": "sucrase -q ./src -d ./dist --transforms typescript,imports",
-        "dev": "yarn compile && node dist"
+        "dev": "yarn compile && node dist",
+        "play": "tsc --incremental && node dist"
     },
     "keywords": [],
     "author": "Tommaso De Rossi, morse <beats.by.morse@gmail.com>",
@@ -30,6 +31,22 @@
         "dotenv": "^8.2.0",
         "mocha": "^6.1.4",
         "sucrase": "^3.12.1",
-        "typescript": "^3.7.5"
+        "typescript": "^3.8.3"
+    },
+    "dependencies": {
+        "@octokit/rest": "^17.6.0",
+        "@types/chalk": "^2.2.0",
+        "@types/node-fetch": "^2.5.7",
+        "@types/yargs": "^15.0.4",
+        "appdata-path": "^1.0.0",
+        "await-to-js": "^2.1.1",
+        "chalk": "^4.0.0",
+        "conf": "^6.2.4",
+        "encoding": "^0.1.12",
+        "git-remote-origin-url": "^3.1.0",
+        "node-fetch": "^2.6.0",
+        "parse-github-url": "^1.0.2",
+        "winston": "^3.2.1",
+        "yargs": "^15.3.1"
     }
 }
