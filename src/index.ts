@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import yargs from 'yargs'
 import winston from 'winston'
 import loginCommand from './login'
