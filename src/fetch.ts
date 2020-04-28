@@ -80,7 +80,7 @@ const FetchCommand = {
                 // changeSpinnertext({ spinner, text: 'in progress' })
                 spinner.stop()
                 await pollJobs({ repo, owner, id })
-                continue
+                return
             }
             if (status === 'completed') {
                 if (conclusion === 'success') {
@@ -133,7 +133,7 @@ export async function pollJobs({ owner, repo, id }) {
                 clear: false,
                 ...cliSpinner
             })
-            console.log(JSON.stringify(job))
+            console.log(JSON.stringify(job, null, 4))
         }
         displayJobsTree({ spinners, job })
         if (job.status === 'completed' && job.conclusion === 'failure') {
@@ -181,7 +181,7 @@ export function displayJobsTree({
             }
         } catch (e) {
             // console.log('wtf', step)
-            console.log(JSON.stringify(job))
+            console.log(JSON.stringify(job, null, 4))
             console.error(step.name, step.number, e)
         }
     }
