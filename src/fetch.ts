@@ -18,6 +18,7 @@ import {
     printRed,
     sleep,
     catchAll,
+    print,
 } from './support'
 
 const DEBUG = process.env.DEBUG
@@ -95,7 +96,7 @@ const FetchCommand = {
                 if (conclusion === 'failure') {
                     spinner.fail(chalk.red('Failure'))
                     // const data = await octokit.actions.getWorkflow({})
-                    printRed(`go to '${html_url}' for the logs`)
+                    print(`go to '${html_url}' for the logs`)
                     // print(
                     //     `https://github.com/${owner}/${repo}/runs/${workflowId}?check_suite_focus=true`
                     // )
@@ -160,6 +161,7 @@ export async function pollJobs({ owner, repo, id }) {
             await sleep(2000)
             continue
         }
+        console.log()
         if (job.conclusion === 'failure') {
             job.steps.forEach((step) => {
                 const spinner = spinners.spinners[step.number]

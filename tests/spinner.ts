@@ -1,6 +1,6 @@
 import ora from 'ora'
 import Multispinner from 'multispinner'
-import { sleep } from '../src/support'
+import { sleep, printRed } from '../src/support'
 import { addSpinner } from '../src/fetch'
 
 it('spinner', async () => {
@@ -24,4 +24,5 @@ it('addSpinner', async () => {
     xs.success('a')
     addSpinner({ spinners: xs, key: 'z', value: 'z' })
     await sleep(1000)
+    printRed('ciao')
 })
