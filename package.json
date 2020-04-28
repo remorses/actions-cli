@@ -1,11 +1,14 @@
 {
-    "name": "nodejs-lib-template",
+    "name": "github-actions-cli",
     "_": "[bump]",
     "version": "0.0.1",
     "description": "",
     "main": "dist/index.js",
     "module": "esm/index.js",
     "types": "dist/index.d.ts",
+    "bin": {
+        "github-actions-cli": "./dist/index.js"
+    },
     "mocha": {
         "require": "tests/init.js",
         "spec": "tests/**.ts",

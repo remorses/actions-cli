@@ -77,7 +77,7 @@ const FetchCommand = {
             }
             if (status === 'in_progress') {
                 changeSpinnertext({ spinner, text: 'in progress' })
-                await sleep(3000)
+                await sleep(2000)
                 continue
             }
             if (status === 'completed') {
