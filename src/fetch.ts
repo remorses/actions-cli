@@ -72,7 +72,8 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                changeSpinnertext({ spinner, text: 'queued' })
+                // changeSpinnertext({ spinner, text: 'queued' })
+                spinner.stop()
                 await sleep(3000)
                 continue
             }
