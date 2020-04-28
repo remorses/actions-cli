@@ -1,4 +1,5 @@
 import yargs, { CommandModule } from 'yargs'
+import * as logSymbols from 'log-symbols'
 import Multispinner from 'multispinner'
 import fetch from 'node-fetch'
 import ora, { Ora } from 'ora'
@@ -141,7 +142,11 @@ export async function pollJobs({ owner, repo, id }) {
             DEBUG && console.log(JSON.stringify(job, null, 4))
         }
         displayJobsTree({ spinners, job })
-        if (job.status === 'completed' && job.conclusion === 'failure') {
+        if (job.status !== 'completed') {
+            await sleep(2000)
+            continue
+        }
+        if (job.conclusion === 'failure') {
             job.steps.forEach((step) => {
                 const spinner = spinners.spinners[step.number]
                 if (spinner && spinner.state === 'incomplete') {
@@ -149,10 +154,16 @@ export async function pollJobs({ owner, repo, id }) {
                 }
             })
         }
-        if (job.status === 'completed') {
-            return
+
+        if (job.conclusion === 'failure') {
+            printRed(
+                `${logSymbols.error} Failed, read the logs at ${job.html_url}`
+            )
         }
-        await sleep(2000)
+        if (job.conclusion === 'success') {
+            printGreen(`${logSymbols.success} Success`)
+        }
+        return
     }
 }
 
