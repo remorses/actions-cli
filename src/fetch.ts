@@ -1,4 +1,5 @@
 import yargs, { CommandModule } from 'yargs'
+import Multispinner from 'multispinner'
 import fetch from 'node-fetch'
 import ora, { Ora } from 'ora'
 import getRepoUrl from 'git-remote-origin-url'
@@ -111,40 +112,67 @@ export default FetchCommand
 
 export async function pollJobs({ spinner = null as Ora, owner, repo, id }) {
     const octokit = initOctokit()
+    let spinners = null
     while (true) {
         const data = await octokit.actions.listJobsForWorkflowRun({
             owner,
             repo,
             run_id: id
         })
-        displayJobsTree({ spinner, jobs: data.data.jobs })
+        // TODO all jobs
+        const job = data.data.jobs[0]
+        if (spinners === null) {
+            const obj = Object.assign(
+                {},
+                ...job.steps.map((x) => ({
+                    [x.number]: ora(job.name).start()
+                }))
+            )
+            spinners = new Multispinner(obj, { clear: false })
+        }
+        const { ok, completed } = displayJobsTree({ spinners, job })
+        if (completed) {
+            if (!ok) {
+                job.steps.forEach((step) => {
+                    if (spinners.spinners[step.number].state === 'incomplete') {
+                        spinners.error(step.number)
+                    }
+                })
+            }
+            return
+        }
         await sleep(2000)
     }
 }
 
 export function displayJobsTree({
-    jobs = [] as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'],
-    spinner = null as Ora
+    job = null as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][0],
+    spinners
 }) {
-    spinner.clear()
-    jobs.map((job) => {
-        job.steps.map((step) => {
-            if (step.status === 'queued') {
-                spinner.info(step.name)
+    for (let step of job.steps) {
+        if (step.status === 'queued') {
+            // spinner.info(step.name)
+            return { ok: true }
+        }
+        if (step.status === 'in_progress') {
+            // spinner.info(step.name)
+            // spinners.success(step.number)
+            return { ok: true }
+        }
+        if (step.status === 'completed') {
+            if (step.conclusion === 'success') {
+                // spinner.info(step.name)
+                spinners.success(step.number)
+                return { ok: true, completed: true }
             }
-            if (step.status === 'in_progress') {
-                spinner.info(step.name)
+            if (step.conclusion === 'failure') {
+                spinners.error(step.number)
+                return { ok: false, completed: true }
             }
-            if (step.status === 'completed') {
-                if (step.conclusion === 'success') {
-                    spinner.info(step.name)
-                }
-                if (step.conclusion === 'failure') {
-                    spinner.info(step.name)
-                }
-            }
-        })
-    })
+        }
+        console.log('wtf', step)
+        return { ok: false, completed: true }
+    }
 }
 
 function getLastPushedCommitSha(): string {
