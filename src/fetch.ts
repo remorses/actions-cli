@@ -15,7 +15,8 @@ import {
     parseGithubUrl,
     printGreen,
     printRed,
-    sleep
+    sleep,
+    catchAll,
 } from './support'
 
 const DEBUG = process.env.DEBUG
@@ -28,17 +29,17 @@ const FetchCommand = {
             type: 'string',
             default: '',
             required: true,
-            description: 'The github repo path'
+            description: 'The github repo path',
         })
     },
-    handler: async (argv) => {
+    handler: catchAll(async (argv) => {
         const octokit = initOctokit()
         const currentPath = path.resolve(argv.path || process.cwd())
         let [error, gitRepoUrl] = await to(getRepoUrl(currentPath))
         if (error || !gitRepoUrl) {
             console.log(
                 'cannot find git origin url, skipping github integration',
-                error
+                error,
             )
             gitRepoUrl = ''
         }
@@ -49,7 +50,7 @@ const FetchCommand = {
         while (true) {
             const data = await octokit.actions.listRepoWorkflowRuns({
                 owner,
-                repo
+                repo,
             })
             const lastRun = data.data.workflow_runs.find((x) => {
                 const { head_sha, status, id, conclusion } = x
@@ -101,12 +102,12 @@ const FetchCommand = {
             }
             console.log(
                 'unexpected state',
-                JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
+                JSON.stringify({ head_sha, status, id, conclusion }, null, 4),
             )
             spinner.fail('Wtf?')
             return
         }
-    }
+    }),
 } // as CommandModule
 
 export default FetchCommand
@@ -118,7 +119,7 @@ export async function pollJobs({ owner, repo, id }) {
         const data = await octokit.actions.listJobsForWorkflowRun({
             owner,
             repo,
-            run_id: id
+            run_id: id,
         })
         // TODO all jobs
         const job = data.data.jobs[0]
@@ -129,14 +130,14 @@ export async function pollJobs({ owner, repo, id }) {
             const obj = Object.assign(
                 {},
                 ...job.steps.map((x) => ({
-                    [x.number]: x.name
-                }))
+                    [x.number]: x.name,
+                })),
             )
             if (!spinners) {
                 // init spinners
                 spinners = new Multispinner(obj, {
                     clear: false,
-                    ...cliSpinner
+                    ...cliSpinner,
                 })
             } else {
                 // add a new spinner
@@ -165,7 +166,7 @@ export async function pollJobs({ owner, repo, id }) {
 
         if (job.conclusion === 'failure') {
             printRed(
-                `${logSymbols.error} Failed, read the logs at '${job.html_url}'`
+                `${logSymbols.error} Failed, read the logs at '${job.html_url}'`,
             )
             return
         }
@@ -185,7 +186,7 @@ export function addSpinner({ spinners, key, value }) {
 
 export function displayJobsTree({
     job = null as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][0],
-    spinners
+    spinners,
 }) {
     // console.log(JSON.stringify(job, null, 4))
     for (let step of job.steps) {
@@ -218,15 +219,14 @@ export function displayJobsTree({
         } catch (e) {
             // console.log('wtf', step)
             console.log(JSON.stringify(job, null, 4))
-            console.error(step.name, step.number, e)
+            throw e
+            // console.error(step.name, step.number, e)
         }
     }
 }
 
 function getLastPushedCommitSha(): string {
-    const sha = execSync('git rev-parse HEAD')
-        .toString()
-        .trim()
+    const sha = execSync('git rev-parse HEAD').toString().trim()
     return sha
 }
 
@@ -235,18 +235,4 @@ function changeSpinnertext({ spinner, text }) {
         spinner.info()
     }
     spinner.start(text)
-}
-
-async function getLogs({ id, owner, repo }) {
-    const octokit = initOctokit()
-    const data = await octokit.actions.listWorkflowRunLogs({
-        owner,
-        repo,
-        run_id: id
-    })
-    console.log(JSON.stringify(data, null, 4))
-    const logsUrl = data.url
-    // const res = await fetch(logsUrl,)
-    // const logs = await res.textConverted()
-    return ''
 }

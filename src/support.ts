@@ -30,20 +30,20 @@ export const winstonConf: LoggerOptions = {
     format: format.combine(
         format.label({
             label: path.basename(
-                (process.mainModule && process.mainModule.filename) || ''
-            )
+                (process.mainModule && process.mainModule.filename) || '',
+            ),
         }),
         format.timestamp({ format: 'YYYY-MM-DD HH' }),
         // Format the metadata object
         format.metadata({
-            fillExcept: ['message', 'level', 'timestamp', 'label']
-        })
+            fillExcept: ['message', 'level', 'timestamp', 'label'],
+        }),
     ),
     transports: [
         new transports.Console({
-            format: format.combine(format.colorize({}), logFormat)
-        })
-    ]
+            format: format.combine(format.colorize({}), logFormat),
+        }),
+    ],
 }
 
 export const print = console.log
@@ -53,8 +53,9 @@ export const printGreen = (x) => console.log(chalk.green(x))
 export function getGithubToken() {
     const store = initStore()
     const token = store.get(USER_TOKEN_CONFIG_KEY)
+    // console.log(token)
     if (!token) {
-        console.log('cannot find github token, run `login` command first')
+        printRed('cannot find github token, run `login <token>` command first')
         process.exit(1)
     }
     return token
@@ -82,3 +83,16 @@ export function parseGithubUrl(githubUrl): { name; owner } {
 }
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+
+export function catchAll(fun) {
+    return async (...args) => {
+        try {
+            return await fun(...args)
+        } catch (e) {
+            console.log()
+            printRed(e)
+            if (process.env.DEBUG) console.log(e)
+            process.exit(1)
+        }
+    }
+}

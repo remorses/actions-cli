@@ -1,4 +1,4 @@
-import yargs, { CommandModule } from 'yargs'
+import yargs, { CommandModule, Argv } from 'yargs'
 import fs from 'fs'
 import { USER_TOKEN_CONFIG_KEY } from './constants'
 import { initStore, printRed } from './support'
@@ -7,8 +7,8 @@ import { initStore, printRed } from './support'
 export default {
     command: 'login',
     describe: 'Logins to cli',
-    builder: (argv) => {
-        argv.option('token', {
+    builder: (argv: Argv) => {
+        argv.positional('token', {
             type: 'string',
             default: '',
             required: true,
