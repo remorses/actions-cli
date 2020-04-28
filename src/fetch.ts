@@ -152,29 +152,33 @@ export function displayJobsTree({
 }) {
     // console.log(JSON.stringify(job, null, 4))
     for (let step of job.steps) {
-        if (step.status === 'queued') {
-            // spinner.info(step.name)
-            // return { ok: true }
-        }
-        if (step.status === 'in_progress') {
-            // spinner.info(step.name)
-            // spinners.success(step.number)
-            // return { ok: true }
-        }
-        if (step.status === 'completed') {
-            // TODO success only one
-
-            if (step.conclusion === 'success') {
+        try {
+            if (step.status === 'queued') {
                 // spinner.info(step.name)
-                spinners.success(step.number)
-                // return { ok: true, completed: true }
+                // return { ok: true }
             }
-            if (step.conclusion === 'failure') {
-                spinners.error(step.number)
-                // return { ok: false, completed: true }
+            if (step.status === 'in_progress') {
+                // spinner.info(step.name)
+                // spinners.success(step.number)
+                // return { ok: true }
             }
+            if (step.status === 'completed') {
+                // TODO success only one
+
+                if (step.conclusion === 'success') {
+                    // spinner.info(step.name)
+                    spinners.success(step.number)
+                    // return { ok: true, completed: true }
+                }
+                if (step.conclusion === 'failure') {
+                    spinners.error(step.number)
+                    // return { ok: false, completed: true }
+                }
+            }
+        } catch (e) {
+            // console.log('wtf', step)
+            console.error(step.name, step.number, e)
         }
-        // console.log('wtf', step)
     }
 }
 
