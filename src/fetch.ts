@@ -6,6 +6,7 @@ import { dots as cliSpinner } from 'cli-spinners'
 import getRepoUrl from 'git-remote-origin-url'
 import * as logSymbols from 'log-symbols'
 import Multispinner from 'multispinner'
+import Spinners from 'multispinner/lib/spinners'
 import ora from 'ora'
 import path from 'path'
 import { Argv } from 'yargs'
@@ -122,9 +123,8 @@ export async function pollJobs({ owner, repo, id }) {
         // TODO all jobs
         const job = data.data.jobs[0]
         if (
-            spinners === null
-            // Object.keys(spinners.spinners).length !== job.steps.length
-            // TODO add spinner when the obj changes, multispinner.spinners.baz = Spinners.prototype.spinnerObj('baz');
+            spinners === null ||
+            Object.keys(spinners.spinners).length !== job.steps.length
         ) {
             const obj = Object.assign(
                 {},
@@ -132,10 +132,21 @@ export async function pollJobs({ owner, repo, id }) {
                     [x.number]: x.name
                 }))
             )
-            spinners = new Multispinner(obj, {
-                clear: false,
-                ...cliSpinner
-            })
+            if (!spinners) {
+                // init spinners
+                spinners = new Multispinner(obj, {
+                    clear: false,
+                    ...cliSpinner
+                })
+            } else {
+                // add a new spinner
+                const spinnersKeys = Object.keys(spinners.spinners)
+                Object.keys(obj).map((k) => {
+                    if (!spinnersKeys.includes(k)) {
+                        addSpinner({ spinners, key: k, value: obj[k] })
+                    }
+                })
+            }
             DEBUG && console.log(JSON.stringify(job, null, 4))
         }
         displayJobsTree({ spinners, job })
@@ -166,6 +177,10 @@ export async function pollJobs({ owner, repo, id }) {
         console.log(job.conclusion)
         return
     }
+}
+
+export function addSpinner({ spinners, key, value }) {
+    spinners.spinners[key] = Spinners.prototype.spinnerObj(value)
 }
 
 export function displayJobsTree({
