@@ -21,6 +21,8 @@ import { Octokit, RestEndpointMethodTypes } from '@octokit/rest'
 import { execSync } from 'child_process'
 import chalk from 'chalk'
 
+const DEBUG = process.env.DEBUG
+
 const FetchCommand = {
     command: '$0',
     describe: 'Fetch the current hash job status and logs',
@@ -133,7 +135,7 @@ export async function pollJobs({ owner, repo, id }) {
                 clear: false,
                 ...cliSpinner
             })
-            console.log(JSON.stringify(job, null, 4))
+            DEBUG && console.log(JSON.stringify(job, null, 4))
         }
         displayJobsTree({ spinners, job })
         if (job.status === 'completed' && job.conclusion === 'failure') {
@@ -157,6 +159,11 @@ export function displayJobsTree({
     // console.log(JSON.stringify(job, null, 4))
     for (let step of job.steps) {
         try {
+            if (
+                !Object.keys(spinners.spinners).includes(step.number.toString())
+            ) {
+                continue
+            }
             if (step.status === 'queued') {
                 // spinner.info(step.name)
                 // return { ok: true }
