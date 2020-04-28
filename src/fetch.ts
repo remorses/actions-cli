@@ -157,17 +157,19 @@ export async function pollJobs({ owner, repo, id }) {
 
         if (job.conclusion === 'failure') {
             printRed(
-                `${logSymbols.error} Failed, read the logs at ${job.html_url}`
+                `${logSymbols.error} Failed, read the logs at '${job.html_url}'`
             )
+            return
         }
         if (job.conclusion === 'success') {
             printGreen(`${logSymbols.success} Success`)
+            return
         }
         DEBUG && console.log(JSON.stringify(job, null, 4))
+        console.log(job.conclusion)
         return
     }
 }
-
 
 export function displayJobsTree({
     job = null as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][0],
@@ -236,5 +238,3 @@ async function getLogs({ id, owner, repo }) {
     // const logs = await res.textConverted()
     return ''
 }
-
-
