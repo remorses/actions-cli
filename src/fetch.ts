@@ -163,6 +163,7 @@ export async function pollJobs({ owner, repo, id }) {
         if (job.conclusion === 'success') {
             printGreen(`${logSymbols.success} Success`)
         }
+        DEBUG && console.log(JSON.stringify(job, null, 4))
         return
     }
 }
