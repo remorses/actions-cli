@@ -79,7 +79,7 @@ const FetchCommand = {
                 continue
             }
             if (status === 'in_progress') {
-                // changeSpinnertext({ spinner, text: 'in progress' })
+                changeSpinnertext({ spinner, text: 'in progress' })
                 spinner.stop()
                 await pollJobs({ repo, owner, id })
                 return
@@ -125,8 +125,8 @@ export async function pollJobs({ owner, repo, id }) {
         // TODO all jobs
         const job = data.data.jobs[0]
         if (
-            spinners === null ||
-            Object.keys(spinners.spinners).length !== job.steps.length
+            spinners === null
+            // Object.keys(spinners.spinners).length !== job.steps.length
         ) {
             const obj = Object.assign(
                 {},
