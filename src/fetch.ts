@@ -78,6 +78,7 @@ const FetchCommand = {
             if (status === 'in_progress') {
                 changeSpinnertext({ spinner, text: 'in progress' })
                 await pollJobs({ repo, owner, spinner, id })
+                continue
             }
             if (status === 'completed') {
                 if (conclusion === 'success') {
@@ -108,6 +109,44 @@ const FetchCommand = {
 
 export default FetchCommand
 
+export async function pollJobs({ spinner = null as Ora, owner, repo, id }) {
+    const octokit = initOctokit()
+    while (true) {
+        const data = await octokit.actions.listJobsForWorkflowRun({
+            owner,
+            repo,
+            run_id: id
+        })
+        displayJobsTree({ spinner, jobs: data.data.jobs })
+        await sleep(2000)
+    }
+}
+
+export function displayJobsTree({
+    jobs = [] as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'],
+    spinner = null as Ora
+}) {
+    spinner.clear()
+    jobs.map((job) => {
+        job.steps.map((step) => {
+            if (step.status === 'queued') {
+                spinner.info(step.name)
+            }
+            if (step.status === 'in_progress') {
+                spinner.info(step.name)
+            }
+            if (step.status === 'completed') {
+                if (step.conclusion === 'success') {
+                    spinner.info(step.name)
+                }
+                if (step.conclusion === 'failure') {
+                    spinner.info(step.name)
+                }
+            }
+        })
+    })
+}
+
 function getLastPushedCommitSha(): string {
     const sha = execSync('git rev-parse HEAD')
         .toString()
@@ -134,36 +173,4 @@ async function getLogs({ id, owner, repo }) {
     // const res = await fetch(logsUrl,)
     // const logs = await res.textConverted()
     return ''
-}
-
-export async function pollJobs({ spinner = null as Ora, owner, repo, id }) {
-    const octokit = initOctokit()
-    while (true) {
-        const data = await octokit.actions.listJobsForWorkflowRun({
-            owner,
-            repo,
-            run_id: id
-        })
-        displayJobsTree({ spinner, jobs: data.data.jobs })
-    }
-}
-
-export function displayJobsTree({
-    jobs = [] as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'],
-    spinner = null as Ora
-}) {
-    spinner.clear()
-    jobs.map((job) => {
-        job.steps.map((step) => {
-            console.log(step)
-            if (step.status === 'completed') {
-                if (step.conclusion === 'success') {
-                    spinner.info(step.name)
-                }
-                if (step.conclusion === 'failure') {
-                    spinner.info(step.name)
-                }
-            }
-        })
-    })
 }
