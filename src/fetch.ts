@@ -1,5 +1,6 @@
 import yargs, { CommandModule } from 'yargs'
 import fetch from 'node-fetch'
+import ora from 'ora'
 import getRepoUrl from 'git-remote-origin-url'
 import to from 'await-to-js'
 
@@ -17,6 +18,7 @@ import {
 } from './support'
 import { Octokit } from '@octokit/rest'
 import { execSync } from 'child_process'
+import chalk from 'chalk'
 
 const FetchCommand = {
     command: '$0',
@@ -45,34 +47,35 @@ const FetchCommand = {
             owner,
             repo
         })
+        const spinner = ora('').start()
         while (true) {
             const lastRun = data.data.workflow_runs.find((x) => {
                 const { head_sha, status, id, conclusion } = x
 
                 if (head_sha === lastPushedSha) {
-                    console.log('found')
+                    // console.log('found')
                     return true
                 }
                 return false
             })
             if (!lastRun) {
-                print('waiting')
-                sleep(1000)
+                spinner.text = 'waiting'
+                await sleep(3000)
                 continue
             }
             const { head_sha, status, id, conclusion, url, html_url } = lastRun
             if (status === 'queued') {
-                print('still queued')
-                sleep(1000)
+                spinner.text = 'still queued'
+                await sleep(3000)
                 continue
             }
             if (status === 'completed') {
                 if (conclusion === 'success') {
-                    printGreen('Success')
+                    spinner.succeed(chalk.green('Success'))
                     return
                 }
                 if (conclusion === 'failure') {
-                    printRed('Failure')
+                    spinner.fail(chalk.red('Failure'))
                     // const data = await octokit.actions.getWorkflow({})
                     printRed(`go to '${html_url}' for the logs`)
                     // print(
@@ -87,6 +90,8 @@ const FetchCommand = {
                 'unexpected values',
                 JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             )
+            spinner.fail('Wtf?')
+            spinner.stop()
             return
         }
     }
