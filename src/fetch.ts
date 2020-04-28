@@ -62,7 +62,10 @@ const FetchCommand = {
                 return false
             })
             if (!lastRun) {
-                changeSpinnertext({ spinner, text: 'waiting for queue' })
+                changeSpinnerText({
+                    spinner,
+                    text: `waiting job handling last pushed sha '${lastPushedSha.slice(0, 7)}'`,
+                })
                 await sleep(3000)
                 continue
             }
@@ -73,12 +76,12 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                changeSpinnertext({ spinner, text: 'queued' })
+                changeSpinnerText({ spinner, text: 'queued' })
                 await sleep(3000)
                 continue
             }
             if (status === 'in_progress') {
-                changeSpinnertext({ spinner, text: 'in progress' })
+                changeSpinnerText({ spinner, text: 'in progress' })
                 spinner.stop()
                 await pollJobs({ repo, owner, id })
                 return
@@ -230,7 +233,7 @@ function getLastPushedCommitSha(): string {
     return sha
 }
 
-function changeSpinnertext({ spinner, text }) {
+function changeSpinnerText({ spinner, text }) {
     if (spinner.text !== text) {
         spinner.info()
     }
