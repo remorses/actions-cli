@@ -78,7 +78,7 @@ const FetchCommand = {
             }
             if (status === 'in_progress') {
                 changeSpinnertext({ spinner, text: 'in progress' })
-                await pollJobs({ repo, owner, spinner, id })
+                await pollJobs({ repo, owner, id })
                 continue
             }
             if (status === 'completed') {
@@ -110,7 +110,7 @@ const FetchCommand = {
 
 export default FetchCommand
 
-export async function pollJobs({ spinner = null as Ora, owner, repo, id }) {
+export async function pollJobs({ owner, repo, id }) {
     const octokit = initOctokit()
     let spinners = null
     while (true) {
@@ -125,20 +125,20 @@ export async function pollJobs({ spinner = null as Ora, owner, repo, id }) {
             const obj = Object.assign(
                 {},
                 ...job.steps.map((x) => ({
-                    [x.number]: ora(job.name).start()
+                    [x.number]: x.name
                 }))
             )
             spinners = new Multispinner(obj, { clear: false })
         }
         const { ok, completed } = displayJobsTree({ spinners, job })
+        if (completed && !ok) {
+            job.steps.forEach((step) => {
+                if (spinners.spinners[step.number].state === 'incomplete') {
+                    spinners.error(step.number)
+                }
+            })
+        }
         if (completed) {
-            if (!ok) {
-                job.steps.forEach((step) => {
-                    if (spinners.spinners[step.number].state === 'incomplete') {
-                        spinners.error(step.number)
-                    }
-                })
-            }
             return
         }
         await sleep(2000)
