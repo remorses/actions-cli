@@ -66,7 +66,10 @@ const FetchCommand = {
             if (!lastRun) {
                 changeSpinnerText({
                     spinner,
-                    text: `waiting job handling last pushed sha '${lastPushedSha.slice(0, 7)}'`,
+                    text: `waiting job handling last pushed sha '${lastPushedSha.slice(
+                        0,
+                        7,
+                    )}'`,
                 })
                 await sleep(3000)
                 continue
@@ -130,6 +133,7 @@ export async function pollJobs({ owner, repo, id }) {
         const job = data.data.jobs[0]
         if (
             spinners === null ||
+            // if the steps changed during build
             Object.keys(spinners.spinners).length !== job.steps.length
         ) {
             const obj = Object.assign(
@@ -182,7 +186,7 @@ export async function pollJobs({ owner, repo, id }) {
             return
         }
         DEBUG && console.log(JSON.stringify(job, null, 4))
-        
+
         return
     }
 }
