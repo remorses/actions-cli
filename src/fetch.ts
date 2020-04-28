@@ -60,7 +60,7 @@ const FetchCommand = {
                 return false
             })
             if (!lastRun) {
-                spinner.text = 'waiting'
+                spinner.text = 'waiting for queue'
                 await sleep(3000)
                 continue
             }
@@ -71,7 +71,12 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                spinner.text = 'still queued'
+                spinner.text = 'queued'
+                await sleep(3000)
+                continue
+            }
+            if (status === 'in_progress') {
+                spinner.text = 'in progress'
                 await sleep(3000)
                 continue
             }
