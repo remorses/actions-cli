@@ -1,43 +1,39 @@
-import yargs, { CommandModule } from 'yargs'
+import { RestEndpointMethodTypes } from '@octokit/rest'
+import to from 'await-to-js'
+import chalk from 'chalk'
+import { execSync } from 'child_process'
+import { dots as cliSpinner } from 'cli-spinners'
+import getRepoUrl from 'git-remote-origin-url'
 import * as logSymbols from 'log-symbols'
 import Multispinner from 'multispinner'
-import fetch from 'node-fetch'
-import ora, { Ora } from 'ora'
-import getRepoUrl from 'git-remote-origin-url'
-import to from 'await-to-js'
-import { dots as cliSpinner } from 'cli-spinners'
-import fs from 'fs'
-import { USER_TOKEN_CONFIG_KEY } from './constants'
+import ora from 'ora'
+import path from 'path'
+import { Argv } from 'yargs'
 import {
-    initStore,
-    printRed,
-    getGithubToken,
+    initOctokit,
     parseGithubUrl,
     printGreen,
-    print,
-    sleep,
-    initOctokit
+    printRed,
+    sleep
 } from './support'
-import { Octokit, RestEndpointMethodTypes } from '@octokit/rest'
-import { execSync } from 'child_process'
-import chalk from 'chalk'
 
 const DEBUG = process.env.DEBUG
 
 const FetchCommand = {
     command: '$0',
     describe: 'Fetch the current hash job status and logs',
-    builder: (argv) => {
-        // argv.option('token', {
-        //     type: 'string',
-        //     default: '',
-        //     required: true,
-        //     description: 'The github token to use for login'
-        // })
+    builder: (argv: Argv) => {
+        argv.positional('path', {
+            type: 'string',
+            default: '',
+            required: true,
+            description: 'The github repo path'
+        })
     },
     handler: async (argv) => {
         const octokit = initOctokit()
-        let [error, gitRepoUrl] = await to(getRepoUrl(process.cwd()))
+        const currentPath = path.resolve(argv.path || process.cwd())
+        let [error, gitRepoUrl] = await to(getRepoUrl(currentPath))
         if (error || !gitRepoUrl) {
             console.log(
                 'cannot find git origin url, skipping github integration',
