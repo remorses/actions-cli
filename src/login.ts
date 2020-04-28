@@ -8,21 +8,21 @@ export default {
     command: 'login',
     describe: 'Logins to cli',
     builder: (argv: Argv) => {
-        argv.positional('token', {
+        argv.option('token', {
             type: 'string',
             default: '',
             required: true,
-            description: 'The github token to use for login'
+            description: 'The github token to use for login, requires actions permissions'
         })
     },
     handler: async (argv) => {
         const store = initStore()
         const token = argv['token']
         if (!token) {
-            printRed('please provide a token')
+            printRed('provide a Github token with actions permissions to login')
             return
         }
         store.set(USER_TOKEN_CONFIG_KEY, token)
-        console.log(`Welcome back`)
+        console.log(`Saved Token`)
     }
 } // as CommandModule

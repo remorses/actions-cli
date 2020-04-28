@@ -55,7 +55,7 @@ export function getGithubToken() {
     const token = store.get(USER_TOKEN_CONFIG_KEY)
     // console.log(token)
     if (!token) {
-        printRed('cannot find github token, run `login <token>` command first')
+        printRed('cannot find github token, run `login --token <token>` command first')
         process.exit(1)
     }
     return token

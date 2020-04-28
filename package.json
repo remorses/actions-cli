@@ -4,7 +4,6 @@
     "version": "0.0.1",
     "description": "",
     "main": "dist/index.js",
-    "module": "esm/index.js",
     "types": "dist/index.d.ts",
     "bin": {
         "github-actions-cli": "./dist/index.js"

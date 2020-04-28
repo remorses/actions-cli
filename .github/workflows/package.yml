@@ -17,13 +17,13 @@ jobs:
             - run: yarn
             - run: yarn test
             - run: tsc
-            - run: tsc -m es6 --outDir esm
-            # - name: Bump version
-            #   uses: remorses/bump-version@js
-            #   with:
-            #       version_file: VERSION
-            #   env:
-            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            # - run: yarn publish
-            #   env:
-            #       NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
+            # - run: tsc -m es6 --outDir esm
+            - name: Bump version
+              uses: remorses/bump-version@js
+              with:
+                  version_file: VERSION
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            - run: yarn publish
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
