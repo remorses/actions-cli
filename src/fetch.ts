@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 import ora, { Ora } from 'ora'
 import getRepoUrl from 'git-remote-origin-url'
 import to from 'await-to-js'
-
+import { dots as cliSpinner } from 'cli-spinners'
 import fs from 'fs'
 import { USER_TOKEN_CONFIG_KEY } from './constants'
 import {
@@ -129,7 +129,10 @@ export async function pollJobs({ owner, repo, id }) {
                     [x.number]: x.name
                 }))
             )
-            spinners = new Multispinner(obj, { clear: false })
+            spinners = new Multispinner(obj, {
+                clear: false,
+                ...cliSpinner
+            })
         }
         displayJobsTree({ spinners, job })
         if (job.status === 'completed' && job.conclusion === 'failure') {
