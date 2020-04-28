@@ -103,7 +103,7 @@ const FetchCommand = {
                 }
             }
             console.log(
-                'unexpected values',
+                'unexpected state',
                 JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             )
             spinner.fail('Wtf?')
