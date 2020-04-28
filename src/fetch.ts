@@ -124,6 +124,7 @@ export async function pollJobs({ owner, repo, id }) {
         if (
             spinners === null
             // Object.keys(spinners.spinners).length !== job.steps.length
+            // TODO add spinner when the obj changes, multispinner.spinners.baz = Spinners.prototype.spinnerObj('baz');
         ) {
             const obj = Object.assign(
                 {},

@@ -18,8 +18,3 @@ $ github-actions-cli
 
 
 
-### TODOS
-
-- github repo path positional argument
-- display all jobs spinners, not only the first
-- encrypt the token somehow
