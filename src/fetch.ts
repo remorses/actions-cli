@@ -128,7 +128,6 @@ export async function pollJobs({ owner, repo, id }) {
             spinners === null ||
             Object.keys(spinners.spinners).length !== job.steps.length
         ) {
-            // TODO or not equal
             const obj = Object.assign(
                 {},
                 ...job.steps.map((x) => ({
@@ -179,8 +178,6 @@ export function displayJobsTree({
                 // return { ok: true }
             }
             if (step.status === 'completed') {
-                // TODO success only one
-
                 if (step.conclusion === 'success') {
                     // spinner.info(step.name)
                     spinners.success(step.number)
