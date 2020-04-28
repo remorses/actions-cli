@@ -140,7 +140,8 @@ export async function pollJobs({ owner, repo, id }) {
         displayJobsTree({ spinners, job })
         if (job.status === 'completed' && job.conclusion === 'failure') {
             job.steps.forEach((step) => {
-                if (spinners.spinners[step.number].state === 'incomplete') {
+                const spinner = spinners.spinners[step.number]
+                if (spinner && spinner.state === 'incomplete') {
                     spinners.error(step.number)
                 }
             })
