@@ -43,12 +43,13 @@ const FetchCommand = {
         }
         const lastPushedSha = getLastPushedCommitSha()
         const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
-        const data = await octokit.actions.listRepoWorkflowRuns({
-            owner,
-            repo
-        })
+
         const spinner = ora('').start()
         while (true) {
+            const data = await octokit.actions.listRepoWorkflowRuns({
+                owner,
+                repo
+            })
             const lastRun = data.data.workflow_runs.find((x) => {
                 const { head_sha, status, id, conclusion } = x
 
@@ -63,7 +64,12 @@ const FetchCommand = {
                 await sleep(3000)
                 continue
             }
+
             const { head_sha, status, id, conclusion, url, html_url } = lastRun
+            // console.log(
+            //     'unexpected values',
+            //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
+            // )
             if (status === 'queued') {
                 spinner.text = 'still queued'
                 await sleep(3000)
@@ -91,7 +97,6 @@ const FetchCommand = {
                 JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             )
             spinner.fail('Wtf?')
-            spinner.stop()
             return
         }
     }
