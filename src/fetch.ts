@@ -131,15 +131,15 @@ export async function pollJobs({ owner, repo, id }) {
             )
             spinners = new Multispinner(obj, { clear: false })
         }
-        const { ok, completed } = displayJobsTree({ spinners, job })
-        if (completed && !ok) {
+        displayJobsTree({ spinners, job })
+        if (job.status === 'completed' && job.conclusion === 'failure') {
             job.steps.forEach((step) => {
                 if (spinners.spinners[step.number].state === 'incomplete') {
                     spinners.error(step.number)
                 }
             })
         }
-        if (completed) {
+        if (job.status === 'completed') {
             return
         }
         await sleep(2000)
@@ -150,31 +150,31 @@ export function displayJobsTree({
     job = null as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][0],
     spinners
 }) {
-    console.log(JSON.stringify(job, null, 4))
+    // console.log(JSON.stringify(job, null, 4))
     for (let step of job.steps) {
         if (step.status === 'queued') {
             // spinner.info(step.name)
-            return { ok: true }
+            // return { ok: true }
         }
         if (step.status === 'in_progress') {
             // spinner.info(step.name)
             // spinners.success(step.number)
-            return { ok: true }
+            // return { ok: true }
         }
         if (step.status === 'completed') {
             // TODO success only one
+
             if (step.conclusion === 'success') {
                 // spinner.info(step.name)
                 spinners.success(step.number)
-                return { ok: true, completed: true }
+                // return { ok: true, completed: true }
             }
             if (step.conclusion === 'failure') {
                 spinners.error(step.number)
-                return { ok: false, completed: true }
+                // return { ok: false, completed: true }
             }
         }
-        console.log('wtf', step)
-        return { ok: false, completed: true }
+        // console.log('wtf', step)
     }
 }
 
