@@ -15,3 +15,11 @@ $ github-actions-cli
 ℹ queued
 ✔ Success
 ```
+
+
+
+### TODOS
+
+- github repo path positional argument
+- display all jobs spinners, not only the first
+- encrypt the token somehow
