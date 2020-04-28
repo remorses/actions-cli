@@ -44,7 +44,7 @@ const FetchCommand = {
         const lastPushedSha = getLastPushedCommitSha()
         const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
 
-        const spinner = ora('').start()
+        const spinner = ora('fetching state').start()
         while (true) {
             const data = await octokit.actions.listRepoWorkflowRuns({
                 owner,
@@ -60,7 +60,8 @@ const FetchCommand = {
                 return false
             })
             if (!lastRun) {
-                spinner.text = 'waiting for queue'
+                spinner.info()
+                spinner.start('waiting for queue')
                 await sleep(3000)
                 continue
             }
@@ -71,11 +72,13 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
+                spinner.info()
                 spinner.start('queued')
                 await sleep(3000)
                 continue
             }
             if (status === 'in_progress') {
+                spinner.info()
                 spinner.start('in progress')
                 await sleep(3000)
                 continue
