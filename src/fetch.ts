@@ -170,7 +170,7 @@ export async function pollJobs({ owner, repo, id }) {
                 }
             })
         }
-
+        console.log('conclusion', job.conclusion)
         if (job.conclusion === 'failure') {
             printRed(
                 `${logSymbols.error} Failed, read the logs at '${job.html_url}'`,
@@ -182,7 +182,7 @@ export async function pollJobs({ owner, repo, id }) {
             return
         }
         DEBUG && console.log(JSON.stringify(job, null, 4))
-        console.log(job.conclusion)
+        
         return
     }
 }
