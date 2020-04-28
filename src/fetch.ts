@@ -71,12 +71,12 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                spinner.text = 'queued'
+                spinner.start('queued')
                 await sleep(3000)
                 continue
             }
             if (status === 'in_progress') {
-                spinner.text = 'in progress'
+                spinner.start('in progress')
                 await sleep(3000)
                 continue
             }
