@@ -72,13 +72,13 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                // changeSpinnertext({ spinner, text: 'queued' })
-                spinner.stop()
+                changeSpinnertext({ spinner, text: 'queued' })
                 await sleep(3000)
                 continue
             }
             if (status === 'in_progress') {
-                changeSpinnertext({ spinner, text: 'in progress' })
+                // changeSpinnertext({ spinner, text: 'in progress' })
+                spinner.stop()
                 await pollJobs({ repo, owner, id })
                 continue
             }
@@ -150,6 +150,7 @@ export function displayJobsTree({
     job = null as RestEndpointMethodTypes['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][0],
     spinners
 }) {
+    console.log(JSON.stringify(job, null, 4))
     for (let step of job.steps) {
         if (step.status === 'queued') {
             // spinner.info(step.name)
@@ -161,6 +162,7 @@ export function displayJobsTree({
             return { ok: true }
         }
         if (step.status === 'completed') {
+            // TODO success only one
             if (step.conclusion === 'success') {
                 // spinner.info(step.name)
                 spinners.success(step.number)
