@@ -60,8 +60,7 @@ const FetchCommand = {
                 return false
             })
             if (!lastRun) {
-                spinner.info()
-                spinner.start('waiting for queue')
+                changeSpinnertext({ spinner, text: 'waiting for queue' })
                 await sleep(3000)
                 continue
             }
@@ -72,14 +71,12 @@ const FetchCommand = {
             //     JSON.stringify({ head_sha, status, id, conclusion }, null, 4)
             // )
             if (status === 'queued') {
-                spinner.info()
-                spinner.start('queued')
+                changeSpinnertext({ spinner, text: 'queued' })
                 await sleep(3000)
                 continue
             }
             if (status === 'in_progress') {
-                spinner.info()
-                spinner.start('in progress')
+                changeSpinnertext({ spinner, text: 'in progress' })
                 await sleep(3000)
                 continue
             }
@@ -117,6 +114,13 @@ function getLastPushedCommitSha(): string {
         .toString()
         .trim()
     return sha
+}
+
+function changeSpinnertext({ spinner, text }) {
+    if (spinner.text !== text) {
+        spinner.info()
+    }
+    spinner.start(text)
 }
 
 async function getLogs({ id, owner, repo }) {
