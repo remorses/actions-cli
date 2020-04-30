@@ -111,71 +111,83 @@ export default FetchCommand
 export async function pollJobs({ owner, repo, id }) {
     DEBUG && console.log('pollJobs')
     const octokit = initOctokit()
-    let spinners = null
-    while (true) {
-        const data = await octokit.actions.listJobsForWorkflowRun({
-            owner,
-            repo,
-            run_id: id,
+    const data = await octokit.actions.listJobsForWorkflowRun({
+        owner,
+        repo,
+        run_id: id,
+    })
+    const spinnersArray = data.data.jobs.map((job) => {
+        let spinners = new Multispinner(spinnersConfigFromJob(job), {
+            ...cliSpinner,
         })
-        // TODO all jobs
-        const job = data.data.jobs[0]
-        if (
-            spinners === null ||
-            // if the steps changed during build
-            Object.keys(spinners.spinners).length !== job.steps.length
-        ) {
-            const obj = Object.assign(
-                {},
-                ...job.steps.map((x) => ({
-                    [x.number]: x.name,
-                })),
-            )
-            if (!spinners) {
-                // init spinners
-                spinners = new Multispinner(obj, {
-                    // clear: false,
-                    // update: logUpdate,
-                    ...cliSpinner,
+        return spinners
+    })
+    await Promise.all(
+        data.data.jobs.map(async (job, index) => {
+            // init spinners
+            while (true) {
+                const spinners = spinnersArray[index]
+                const data = await octokit.actions.listJobsForWorkflowRun({
+                    owner,
+                    repo,
+                    run_id: id,
                 })
-            } else {
-                // add a new spinner
-                const spinnersKeys = Object.keys(spinners.spinners)
-                Object.keys(obj).map((k) => {
-                    if (!spinnersKeys.includes(k)) {
-                        addSpinner({ spinners, key: k, value: obj[k] })
-                    }
-                })
-            }
-            DEBUG && console.log(JSON.stringify(job, null, 4))
-        }
-        displayJobsTree({ spinners, job })
-        if (job.status !== 'completed') {
-            await sleep(2000)
-            continue
-        }
-        spinners.update.clear() // TODO bug on multispinners
-        if (job.conclusion === 'failure') {
-            job.steps.forEach((step) => {
-                const spinner = spinners.spinners[step.number]
-                if (spinner && spinner.state === 'incomplete') {
-                    spinners.error(step.number)
+                // TODO all jobs
+                // const job = data.data.jobs[0]
+                if (
+                    // if the steps changed during build
+                    Object.keys(spinners.spinners).length !== job.steps.length
+                ) {
+                    // add a new spinner
+                    const obj = spinnersConfigFromJob(job)
+                    const spinnersKeys = Object.keys(spinners.spinners)
+                    Object.keys(obj).map((k) => {
+                        if (!spinnersKeys.includes(k)) {
+                            addSpinner({ spinners, key: k, value: obj[k] })
+                        }
+                    })
                 }
-            })
-        }
-        if (job.conclusion === 'failure') {
-            printRed(
-                `${logSymbols.error} Failed, read the logs at '${job.html_url}'`,
-            )
-            return
-        }
-        if (job.conclusion === 'success') {
-            printGreen(`${logSymbols.success} Success`)
-            return
-        }
-        console.log(JSON.stringify(job, null, 4))
-        return
-    }
+                displayJobsTree({ spinners, job })
+                if (job.status !== 'completed') {
+                    await sleep(2000)
+                    continue
+                }
+                spinners.update.clear() // TODO bug on multispinners
+                if (job.conclusion === 'failure') {
+                    job.steps.forEach((step) => {
+                        const spinner = spinners.spinners[step.number]
+                        if (spinner && spinner.state === 'incomplete') {
+                            spinners.error(step.number)
+                        }
+                    })
+                }
+                if (job.conclusion === 'failure') {
+                    printRed(
+                        `${logSymbols.error} Failed, read the logs at '${job.html_url}'`,
+                    )
+                    return
+                }
+                if (job.conclusion === 'success') {
+                    printGreen(`${logSymbols.success} Success`)
+                    return
+                }
+                console.log(JSON.stringify(job, null, 4))
+                return
+            }
+        }),
+    )
+}
+
+function spinnersConfigFromJob(job) {
+    const obj = Object.assign(
+        {},
+        ...job.steps.map((x) => ({
+            [x.number]: x.name,
+        })),
+    )
+    // init spinners
+
+    return obj
 }
 
 export function addSpinner({ spinners, key, value }) {
