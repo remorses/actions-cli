@@ -81,26 +81,23 @@ const FetchCommand = {
             }
             if (status === 'in_progress') {
                 changeSpinnerText({ spinner, text: 'in progress' })
+                spinner.info()
                 spinner.stop()
                 await pollJobs({ repo, owner, id })
                 return
             }
             if (status === 'completed') {
-                if (conclusion === 'success') {
-                    spinner.succeed(chalk.green('Success'))
-                    return
-                }
-                if (conclusion === 'failure') {
-                    spinner.fail(chalk.red('Failure'))
-                    // const data = await octokit.actions.getWorkflow({})
-                    print(`go to '${html_url}' for the logs`)
-                    // print(
-                    //     `https://github.com/${owner}/${repo}/runs/${workflowId}?check_suite_focus=true`
-                    // )
-                    // const logs = await getLogs({ id, repo, owner })
-                    // print(logs)
-                    return
-                }
+                changeSpinnerText({ spinner, text: 'completed' })
+                spinner.info()
+                spinner.stop()
+                // if (conclusion === 'success') {
+                //     spinner.succeed(chalk.green('Success'))
+                // }
+                // if (conclusion === 'failure') {
+                //     spinner.fail(chalk.red('Failure'))
+                // }
+                await pollJobs({ repo, owner, id })
+                return
             }
             console.log(
                 'unexpected state',
@@ -115,6 +112,7 @@ const FetchCommand = {
 export default FetchCommand
 
 export async function pollJobs({ owner, repo, id }) {
+    DEBUG && console.log('pollJobs')
     const octokit = initOctokit()
     let spinners = null
     while (true) {
@@ -139,8 +137,8 @@ export async function pollJobs({ owner, repo, id }) {
             if (!spinners) {
                 // init spinners
                 spinners = new Multispinner(obj, {
-                    clear: false,
-                    update: logUpdate,
+                    // clear: false,
+                    // update: logUpdate,
                     ...cliSpinner,
                 })
             } else {
@@ -159,6 +157,7 @@ export async function pollJobs({ owner, repo, id }) {
             await sleep(2000)
             continue
         }
+        spinners.update.clear() // TODO bug on multispinners
         if (job.conclusion === 'failure') {
             job.steps.forEach((step) => {
                 const spinner = spinners.spinners[step.number]
@@ -177,7 +176,7 @@ export async function pollJobs({ owner, repo, id }) {
             printGreen(`${logSymbols.success} Success`)
             return
         }
-        DEBUG && console.log(JSON.stringify(job, null, 4))
+        console.log(JSON.stringify(job, null, 4))
         return
     }
 }
