@@ -33,24 +33,32 @@ const FetchCommand = {
             required: true,
             description: 'The github repo path',
         })
+        argv.option('sha', {
+            type: 'string',
+            default: '',
+            required: true,
+            description:
+                'The sha to look for actions, at least 7 characters long',
+        })
     },
     handler: catchAll(async (argv) => {
         const octokit = initOctokit()
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
 
-        let lastPushedSha = getLastPushedCommitSha()
-        const prettySha = lastPushedSha.slice(0, 7)
+        let sha = argv.sha || getLastPushedCommitSha()
+        const prettySha = sha.slice(0, 7)
         const spinner = ora(`fetching state for sha '${prettySha}'`).start()
         while (true) {
             const data = await octokit.actions.listRepoWorkflowRuns({
                 owner,
                 repo,
             })
+            // TODO multiple workflows
             const lastRun = data.data.workflow_runs.find((x) => {
                 const { head_sha, status, id, conclusion } = x
 
-                if (head_sha === lastPushedSha) {
+                if (head_sha.slice(0, 7) === sha.slice(0, 7)) {
                     // console.log('found')
                     return true
                 }
@@ -62,7 +70,9 @@ const FetchCommand = {
                     text: `waiting job handling last pushed sha '${prettySha}'`,
                 })
                 await sleep(3000)
-                lastPushedSha = getLastPushedCommitSha()
+                if (!argv.sha) {
+                    sha = getLastPushedCommitSha()
+                }
                 continue
             }
 

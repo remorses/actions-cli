@@ -17,4 +17,8 @@ $ actions-cli
 ```
 
 
+### TODOS
 
+- multiple jobs per workflow
+- multiple workflows
+- don't use the commit pushed from github actions
