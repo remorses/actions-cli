@@ -18,13 +18,6 @@ it('multispinner', async () => {
     xs.success('a')
     await sleep(1000)
 })
-it('multiple multispinner', async () => {
-    let xs = new Multispinner({ a: 'x', b: 'y' }, {})
-    let ys = new Multispinner({ a: 'a', b: 'b' }, {})
-    await sleep(1000)
-    xs.success('a')
-    await sleep(1000)
-})
 it('addSpinner', async () => {
     let xs = new Multispinner({ a: 'x', b: 'y' }, {})
     await sleep(1000)
