@@ -19,7 +19,7 @@ export default {
         const store = initStore()
         const token = argv['token']
         if (!token) {
-            printRed('provide a Github token with actions permissions to login')
+            printRed('provide a Github token via `--token` option')
             return
         }
         store.set(USER_TOKEN_CONFIG_KEY, token)
