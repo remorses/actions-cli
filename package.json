@@ -1,12 +1,12 @@
 {
-    "name": "github-actions-cli",
+    "name": "actions-cli",
     "_": "[bump]",
     "version": "0.0.10",
     "description": "",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "bin": {
-        "github-actions-cli": "./dist/index.js"
+        "actions-cli": "./dist/index.js"
     },
     "mocha": {
         "require": "tests/init.js",
