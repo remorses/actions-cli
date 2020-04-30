@@ -37,16 +37,9 @@ const FetchCommand = {
     handler: catchAll(async (argv) => {
         const octokit = initOctokit()
         const currentPath = path.resolve(argv.path || process.cwd())
-        let [error, gitRepoUrl] = await to(getRepoUrl(currentPath))
-        if (error || !gitRepoUrl) {
-            console.log(
-                'cannot find git origin url, skipping github integration',
-                error,
-            )
-            gitRepoUrl = ''
-        }
+        const { owner, repo } = await getRepoInfo(currentPath)
+
         let lastPushedSha = getLastPushedCommitSha()
-        const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
 
         const spinner = ora('fetching state').start()
         while (true) {
@@ -235,7 +228,7 @@ export function displayJobsTree({
 }
 
 function getLastPushedCommitSha(): string {
-    const sha = execSync('git rev-parse HEAD').toString().trim()
+    const sha = execSync('git rev-parse origin/master').toString().trim()
     return sha
 }
 
@@ -244,4 +237,17 @@ function changeSpinnerText({ spinner, text }) {
         spinner.info()
     }
     spinner.start(text)
+}
+
+// export async function isCommitFromActions({ sha, repo, owner }) {
+//     const octokit = initOctokit()
+//     const data = await octokit.repos.getCommit({ owner, repo, ref: sha })
+//     console.log(JSON.stringify(data.data, null, 4))
+//     return false
+// }
+
+export async function getRepoInfo(currentPath) {
+    const gitRepoUrl = await getRepoUrl(currentPath)
+    const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
+    return { repo, owner }
 }
