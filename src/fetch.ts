@@ -40,8 +40,8 @@ const FetchCommand = {
         const { owner, repo } = await getRepoInfo(currentPath)
 
         let lastPushedSha = getLastPushedCommitSha()
-
-        const spinner = ora('fetching state').start()
+        const prettySha = lastPushedSha.slice(0, 7)
+        const spinner = ora(`fetching state for sha '${prettySha}'`).start()
         while (true) {
             const data = await octokit.actions.listRepoWorkflowRuns({
                 owner,
@@ -59,10 +59,7 @@ const FetchCommand = {
             if (!lastRun) {
                 changeSpinnerText({
                     spinner,
-                    text: `waiting job handling last pushed sha '${lastPushedSha.slice(
-                        0,
-                        7,
-                    )}'`,
+                    text: `waiting job handling last pushed sha '${prettySha}'`,
                 })
                 await sleep(3000)
                 lastPushedSha = getLastPushedCommitSha()
