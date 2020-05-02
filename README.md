@@ -17,8 +17,8 @@ npm install -g actions-cli
 ## Usage
 
 ```
-actions-cli login --token xxx
-actions-cli ./
+$ actions-cli login --token xxx
+$ actions-cli ./
 ```
 
 ```
