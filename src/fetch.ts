@@ -40,9 +40,23 @@ const FetchCommand = {
             description:
                 'The sha to look for actions, at least 7 characters long',
         })
+        argv.option('workflow', {
+            type: 'string',
+            default: '',
+            alias: 'w',
+            description: 'The workflow file name',
+        })
+        argv.option('job', {
+            type: 'string',
+            default: '',
+            alias: 'j',
+            description: 'The job name, defaults to the first listed job',
+        })
     },
     handler: catchAll(async (argv) => {
         const octokit = initOctokit()
+        const jobToFetch = argv.job
+        const workflowToFetch = argv.workflow
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
 
@@ -50,16 +64,28 @@ const FetchCommand = {
         const prettySha = sha.slice(0, 7)
         const spinner = ora(`fetching state for sha '${prettySha}'`).start()
         while (true) {
-            const data = await octokit.actions.listRepoWorkflowRuns({
-                owner,
-                repo,
-            })
-            // TODO multiple workflows
-            const lastRun = data.data.workflow_runs.find((x) => {
-                const { head_sha, status, id, conclusion } = x
+            let workflowRuns = []
 
+            if (workflowToFetch) {
+                const data = await octokit.actions.listWorkflowRuns({
+                    owner,
+                    repo,
+                    workflow_id: workflowToFetch,
+                })
+                workflowRuns = data.data.workflow_runs
+            } else {
+                const data = await octokit.actions.listRepoWorkflowRuns({
+                    owner,
+                    repo,
+                })
+                workflowRuns = data.data.workflow_runs
+            }
+            const lastRun = workflowRuns.find((x) => {
+                const { head_sha, status, id, conclusion, workflow_url } = x
+                // console.log({ workflow_url })
                 if (head_sha.slice(0, 7) === sha.slice(0, 7)) {
                     // console.log('found')
+
                     return true
                 }
                 return false
@@ -90,7 +116,7 @@ const FetchCommand = {
                 changeSpinnerText({ spinner, text: 'in progress' })
                 spinner.info()
                 spinner.stop()
-                await pollJobs({ repo, owner, id })
+                await pollJobs({ repo, owner, id, jobToFetch })
                 return
             }
             if (status === 'completed') {
@@ -103,7 +129,7 @@ const FetchCommand = {
                 // if (conclusion === 'failure') {
                 //     spinner.fail(chalk.red('Failure'))
                 // }
-                await pollJobs({ repo, owner, id })
+                await pollJobs({ repo, owner, id, jobToFetch })
                 return
             }
             console.log(
@@ -118,7 +144,7 @@ const FetchCommand = {
 
 export default FetchCommand
 
-export async function pollJobs({ owner, repo, id }) {
+export async function pollJobs({ owner, repo, id, jobToFetch }) {
     DEBUG && console.log('pollJobs')
     const octokit = initOctokit()
     let spinners = null
@@ -128,8 +154,14 @@ export async function pollJobs({ owner, repo, id }) {
             repo,
             run_id: id,
         })
-        // TODO all jobs
-        const job = data.data.jobs[0]
+        if (!data.data.jobs.length) {
+            return
+        }
+        const job = jobToFetch
+            ? data.data.jobs.find((job) => {
+                  return job.name === jobToFetch
+              })
+            : data.data.jobs[0]
         if (
             spinners === null ||
             // if the steps changed during build
