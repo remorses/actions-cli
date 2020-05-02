@@ -1,4 +1,13 @@
-# actions-cli
+<div align='center'>
+    <br/>
+    <br/>
+    <h1>actions-cli</h1>
+    <br/>
+    <br/>
+    <img width='500px' src='https://media.giphy.com/media/JUYF1dCf2qQ1T63VFU/giphy.gif'>
+    <br/>
+    <br/>
+</div>
 
 ```
 npm install -g actions-cli
