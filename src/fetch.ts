@@ -67,11 +67,18 @@ const FetchCommand = {
             let workflowRuns = []
 
             if (workflowToFetch) {
-                const data = await octokit.actions.listWorkflowRuns({
-                    owner,
-                    repo,
-                    workflow_id: workflowToFetch,
-                })
+                const [err, data] = await to(
+                    octokit.actions.listWorkflowRuns({
+                        owner,
+                        repo,
+                        workflow_id: workflowToFetch,
+                    }),
+                )
+                if (err) {
+                    spinner.stop()
+                    printRed(`Workflow '${workflowToFetch}' not found`)
+                    return
+                }
                 workflowRuns = data.data.workflow_runs
             } else {
                 const data = await octokit.actions.listRepoWorkflowRuns({
@@ -154,14 +161,15 @@ export async function pollJobs({ owner, repo, id, jobToFetch }) {
             repo,
             run_id: id,
         })
-        if (!data.data.jobs.length) {
-            return
-        }
         const job = jobToFetch
             ? data.data.jobs.find((job) => {
                   return job.name === jobToFetch
               })
-            : data.data.jobs[0]
+            : data.data.jobs?.[0]
+        if (!job) {
+            printRed(`Job '${jobToFetch}' not found`)
+            return
+        }
         if (
             spinners === null ||
             // if the steps changed during build
