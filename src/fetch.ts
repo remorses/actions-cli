@@ -93,7 +93,7 @@ const FetchCommand = {
             if (!lastRun) {
                 changeSpinnerText({
                     spinner,
-                    text: `waiting job handling last pushed sha '${prettySha}'`,
+                    text: `waiting job handling last commit '${prettySha}'`,
                 })
                 await sleep(3000)
                 if (!argv.sha) {
