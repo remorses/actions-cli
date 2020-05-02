@@ -38,6 +38,7 @@
     "dependencies": {
         "@octokit/rest": "^17.6.0",
         "@types/chalk": "^2.2.0",
+        "@types/lodash": "^4.14.150",
         "@types/node-fetch": "^2.5.7",
         "@types/yargs": "^15.0.4",
         "appdata-path": "^1.0.0",
@@ -47,12 +48,14 @@
         "conf": "^6.2.4",
         "encoding": "^0.1.12",
         "git-remote-origin-url": "^3.1.0",
+        "lodash": "^4.17.15",
         "log-symbols": "^4.0.0",
         "log-update": "^4.0.0",
         "multispinner": "^0.2.1",
         "node-fetch": "^2.6.0",
         "ora": "^4.0.4",
         "parse-github-url": "^1.0.2",
+        "simple-git": "^2.2.0",
         "winston": "^3.2.1",
         "yargs": "^15.3.1"
     }

@@ -1,4 +1,6 @@
-import { RestEndpointMethodTypes } from '@octokit/rest'
+import { RestEndpointMethodTypes, Octokit } from '@octokit/rest'
+import { flatten } from 'lodash'
+import simpleGit from 'simple-git/promise'
 import to from 'await-to-js'
 import chalk from 'chalk'
 import { execSync } from 'child_process'
@@ -60,7 +62,9 @@ const FetchCommand = {
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
 
-        let sha = argv.sha || getLastPushedCommitSha()
+        let sha =
+            argv.sha ||
+            (await getLastCommit({ octokit, owner, repo, cwd: currentPath }))
         const prettySha = sha.slice(0, 7)
         const spinner = ora(`fetching state for sha '${prettySha}'`).start()
         while (true) {
@@ -104,7 +108,12 @@ const FetchCommand = {
                 })
                 await sleep(3000)
                 if (!argv.sha) {
-                    sha = getLastPushedCommitSha()
+                    sha = await getLastCommit({
+                        octokit,
+                        owner,
+                        repo,
+                        cwd: currentPath,
+                    })
                 }
                 continue
             }
@@ -273,11 +282,6 @@ export function displayJobsTree({
     }
 }
 
-function getLastPushedCommitSha(): string {
-    const sha = execSync('git rev-parse HEAD').toString().trim()
-    return sha
-}
-
 function changeSpinnerText({ spinner, text }) {
     if (spinner.text !== text) {
         spinner.info()
@@ -296,4 +300,43 @@ export async function getRepoInfo(currentPath) {
     const gitRepoUrl = await getRepoUrl(currentPath)
     const { name: repo, owner } = parseGithubUrl(gitRepoUrl)
     return { repo, owner }
+}
+
+const GITHUB_ACTIONS_BOT_LOGIN = 'github-actions[bot]'
+
+export async function getLastCommit(args: {
+    octokit: Octokit
+    owner
+    repo
+    cwd
+}): Promise<string> {
+    const { owner, repo } = args
+    const git = simpleGit(args.cwd)
+    const data: any = await args.octokit.activity.listRepoEvents({
+        owner,
+        repo,
+        per_page: 5,
+
+    })
+    // console.log(JSON.stringify(data.data, null, 4))
+    const commits: { actor: string; refs: string[] }[] = data.data
+        .filter((event) => {
+            return event.type === 'PushEvent'
+        })
+        .map((event) => {
+            return {
+                actor: event.actor.login,
+                refs: event.payload.commits.map((x) => x.sha),
+            }
+        })
+    const githubActionsCommits: string[] = flatten(
+        commits
+            .filter((x) => x.actor === GITHUB_ACTIONS_BOT_LOGIN)
+            .map((x) => x.refs),
+    ).map((x) => x.slice(0, 7))
+    const lastLocalCommits = await git.log()
+    const lastNonActionsCommit = lastLocalCommits.all.find((commit) => {
+        return !githubActionsCommits.includes(commit.hash.slice(0, 7))
+    })
+    return lastNonActionsCommit.hash
 }

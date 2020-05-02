@@ -21,4 +21,4 @@ $ actions-cli
 
 - multiple jobs per workflow
 - multiple workflows
-- don't use the commit pushed from github actions
+- ~~don't use the commit pushed from github actions~~
