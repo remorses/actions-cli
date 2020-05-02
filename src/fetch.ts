@@ -14,6 +14,7 @@ import ora from 'ora'
 import logUpdate from 'log-update'
 import path from 'path'
 import { Argv } from 'yargs'
+
 import {
     initOctokit,
     parseGithubUrl,
@@ -228,12 +229,18 @@ export async function pollJobs({ owner, repo, id, jobToFetch }) {
         }
         if (job.conclusion === 'failure') {
             printRed(
-                `${logSymbols.error} Failed, read the logs at '${job.html_url}'`,
+                `${
+                    logSymbols.error
+                } Failed, read the logs at ${chalk.whiteBright(job.html_url)}`,
             )
             return
         }
         if (job.conclusion === 'success') {
-            printGreen(`${logSymbols.success} Success`)
+            printGreen(
+                `${
+                    logSymbols.success
+                } Success, read the logs at ${chalk.whiteBright(job.html_url)}`,
+            )
             return
         }
         console.log(JSON.stringify(job, null, 4))
