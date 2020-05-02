@@ -61,12 +61,15 @@ const FetchCommand = {
         const workflowToFetch = argv.workflow
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
-
+        const spinner = ora(`fetching last non actions commit'`).start()
         let sha =
             argv.sha ||
             (await getLastCommit({ octokit, owner, repo, cwd: currentPath }))
         const prettySha = sha.slice(0, 7)
-        const spinner = ora(`fetching state for sha '${prettySha}'`).start()
+        changeSpinnerText({
+            text: `fetching state for sha '${prettySha}'`,
+            spinner,
+        })
         while (true) {
             let workflowRuns = []
 
@@ -107,14 +110,14 @@ const FetchCommand = {
                     text: `waiting job handling last commit '${prettySha}'`,
                 })
                 await sleep(3000)
-                if (!argv.sha) {
-                    sha = await getLastCommit({
-                        octokit,
-                        owner,
-                        repo,
-                        cwd: currentPath,
-                    })
-                }
+                // if (!argv.sha) {
+                //     sha = await getLastCommit({
+                //         octokit,
+                //         owner,
+                //         repo,
+                //         cwd: currentPath,
+                //     })
+                // }
                 continue
             }
 
@@ -316,7 +319,6 @@ export async function getLastCommit(args: {
         owner,
         repo,
         per_page: 5,
-
     })
     // console.log(JSON.stringify(data.data, null, 4))
     const commits: { actor: string; refs: string[] }[] = data.data
