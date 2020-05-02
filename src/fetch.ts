@@ -1,3 +1,4 @@
+import memoize from 'memoizee'
 import { RestEndpointMethodTypes, Octokit } from '@octokit/rest'
 import { flatten } from 'lodash'
 import simpleGit from 'simple-git/promise'
@@ -61,7 +62,7 @@ const FetchCommand = {
         const workflowToFetch = argv.workflow
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
-        const spinner = ora(`fetching last non actions commit'`).start()
+        const spinner = ora(`fetching last non actions commit`).start()
         let sha =
             argv.sha ||
             (await getLastCommit({ octokit, owner, repo, cwd: currentPath }))
@@ -110,14 +111,14 @@ const FetchCommand = {
                     text: `waiting job handling last commit '${prettySha}'`,
                 })
                 await sleep(3000)
-                // if (!argv.sha) {
-                //     sha = await getLastCommit({
-                //         octokit,
-                //         owner,
-                //         repo,
-                //         cwd: currentPath,
-                //     })
-                // }
+                if (!argv.sha) {
+                    sha = await getLastCommit({
+                        octokit,
+                        owner,
+                        repo,
+                        cwd: currentPath,
+                    })
+                }
                 continue
             }
 
@@ -307,30 +308,41 @@ export async function getRepoInfo(currentPath) {
 
 const GITHUB_ACTIONS_BOT_LOGIN = 'github-actions[bot]'
 
+const getRepoCommits = memoize(
+    async ({
+        octokit,
+        owner,
+        repo,
+    }): Promise<{ actor: string; refs: string[] }[]> => {
+        const data = await octokit.activity.listRepoEvents({
+            owner,
+            repo,
+            per_page: 5,
+        })
+        const commits = data.data
+            .filter((event) => {
+                return event.type === 'PushEvent'
+            })
+            .map((event) => {
+                return {
+                    actor: event.actor.login,
+                    refs: event.payload.commits.map((x) => x.sha),
+                }
+            })
+        return commits
+    },
+)
+
 export async function getLastCommit(args: {
     octokit: Octokit
     owner
     repo
     cwd
 }): Promise<string> {
-    const { owner, repo } = args
+    const { owner, repo, octokit } = args
     const git = simpleGit(args.cwd)
-    const data: any = await args.octokit.activity.listRepoEvents({
-        owner,
-        repo,
-        per_page: 5,
-    })
     // console.log(JSON.stringify(data.data, null, 4))
-    const commits: { actor: string; refs: string[] }[] = data.data
-        .filter((event) => {
-            return event.type === 'PushEvent'
-        })
-        .map((event) => {
-            return {
-                actor: event.actor.login,
-                refs: event.payload.commits.map((x) => x.sha),
-            }
-        })
+    const commits = await getRepoCommits({ owner, repo, octokit })
     const githubActionsCommits: string[] = flatten(
         commits
             .filter((x) => x.actor === GITHUB_ACTIONS_BOT_LOGIN)
