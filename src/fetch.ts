@@ -234,7 +234,7 @@ export function displayJobsTree({
 }
 
 function getLastPushedCommitSha(): string {
-    const sha = execSync('git rev-parse origin/master').toString().trim()
+    const sha = execSync('git rev-parse HEAD').toString().trim()
     return sha
 }
 
