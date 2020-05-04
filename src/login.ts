@@ -18,9 +18,12 @@ export default {
             scopes: {
                 github: ['notifications', 'repo'],
             },
-            port: 3000, // default sto random port
         })
         const githubToken = credentials.oauthAccessToken
+        if (!githubToken) {
+            printRed('cannot get token')
+            return
+        }
         store.set(USER_TOKEN_CONFIG_KEY, githubToken)
         console.log(`Saved Token`)
     },
