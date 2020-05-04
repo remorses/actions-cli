@@ -56,17 +56,31 @@ const FetchCommand = {
             alias: 'j',
             description: 'The job name, defaults to the first listed job',
         })
+        argv.option('non-actions-commit', {
+            type: 'boolean',
+            default: false,
+            alias: 'n',
+            description:
+                'Double checks that the used sha was not committed by github-actions',
+        })
     },
     handler: catchAll(async (argv) => {
         const octokit = initOctokit()
         const jobToFetch = argv.job
+        const skipActionsCheck = !argv['non-actions-commit']
         const workflowToFetch = argv.workflow
         const currentPath = path.resolve(argv.path || process.cwd())
         const { owner, repo } = await getRepoInfo(currentPath)
-        const spinner = ora(`fetching last non actions commit`).start()
+        const spinner = ora(`getting last commit sha`).start()
         let sha =
             argv.sha ||
-            (await getLastCommit({ octokit, owner, repo, cwd: currentPath }))
+            (await getLastCommit({
+                octokit,
+                owner,
+                repo,
+                cwd: currentPath,
+                skipActionsCheck,
+            }))
         const prettySha = sha.slice(0, 7)
         changeSpinnerText({
             text: `fetching state for sha '${prettySha}'`,
@@ -118,6 +132,7 @@ const FetchCommand = {
                         owner,
                         repo,
                         cwd: currentPath,
+                        skipActionsCheck,
                     })
                 }
                 continue
@@ -345,7 +360,11 @@ export async function getLastCommit(args: {
     owner
     repo
     cwd
+    skipActionsCheck
 }): Promise<string> {
+    if (args.skipActionsCheck) {
+        return execSync('git rev-parse HEAD').toString().trim()
+    }
     const { owner, repo, octokit } = args
     const git = simpleGit(args.cwd)
     // console.log(JSON.stringify(data.data, null, 4))

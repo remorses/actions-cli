@@ -45,6 +45,7 @@
         "appdata-path": "^1.0.0",
         "await-to-js": "^2.1.1",
         "chalk": "^4.0.0",
+        "cli-social-login": "^1.0.1",
         "cli-spinners": "^2.3.0",
         "conf": "^6.2.4",
         "encoding": "^0.1.12",

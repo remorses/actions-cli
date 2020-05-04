@@ -1,28 +1,27 @@
 import yargs, { CommandModule, Argv } from 'yargs'
+import { loginOnLocalhost } from 'cli-social-login'
 import fs from 'fs'
-import { USER_TOKEN_CONFIG_KEY } from './constants'
+import { USER_TOKEN_CONFIG_KEY, firebaseConfig } from './constants'
 import { initStore, printRed } from './support'
-
 
 export default {
     command: 'login',
     describe: 'Logins to cli',
-    builder: (argv: Argv) => {
-        argv.option('token', {
-            type: 'string',
-            default: '',
-            required: true,
-            description: 'The github token to use for login, requires actions permissions'
-        })
-    },
+    builder: (argv: Argv) => {},
     handler: async (argv) => {
         const store = initStore()
-        const token = argv['token']
-        if (!token) {
-            printRed('provide a Github token via `--token` option')
-            return
-        }
-        store.set(USER_TOKEN_CONFIG_KEY, token)
+
+        // starts a server on localhost to login the user
+        const { credentials, user } = await loginOnLocalhost({
+            firebaseConfig,
+            providers: ['github'],
+            scopes: {
+                github: ['notifications', 'repo'],
+            },
+            port: 3000, // default sto random port
+        })
+        const githubToken = credentials.oauthAccessToken
+        store.set(USER_TOKEN_CONFIG_KEY, githubToken)
         console.log(`Saved Token`)
-    }
+    },
 } // as CommandModule

@@ -6,7 +6,7 @@
         "lib": [
             "es2017",
             "es7",
-            "es6",
+            "es6"
             // "dom"
         ],
         "declaration": true,
@@ -15,15 +15,8 @@
         "esModuleInterop": true,
         "noImplicitAny": false,
         "jsx": "react",
-        "sourceMap": true
+        "sourceMap": true,
+        "skipLibCheck": true
     },
-    "exclude": [
-        "node_modules",
-        "dist",
-        "esm",
-        "example",
-        "tests",
-    ]
+    "exclude": ["node_modules", "dist", "esm", "example", "tests"]
 }
-
-
