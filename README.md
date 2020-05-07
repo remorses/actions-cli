@@ -2,7 +2,7 @@
     <br/>
     <br/>
     <h1>actions-cli</h1>
-    <h3>Monitor your Github Actions from the command line</h3>
+    <h3>Monitor your GitHub Actions from the command line</h3>
     <br/>
     <img width='500px' src='https://media.giphy.com/media/JUYF1dCf2qQ1T63VFU/giphy.gif'>
     <br/>
