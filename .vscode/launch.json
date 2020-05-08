@@ -12,7 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/dist/index.js",
-            "args": ["-w", "package.yml"],
+            "args": ["-w", "package.yml", "-n"],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]

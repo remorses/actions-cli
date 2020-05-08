@@ -61,7 +61,7 @@ const FetchCommand = {
             default: false,
             alias: 'n',
             description:
-                'Double checks that the used sha was not committed by github-actions',
+                'Double checks that the used sha was not committed by github-actions, only works for recent actions commits',
         })
     },
     handler: catchAll(async (argv) => {
@@ -339,7 +339,7 @@ const getRepoCommits = memoize(
         const data = await octokit.activity.listRepoEvents({
             owner,
             repo,
-            per_page: 5,
+            per_page: 20,
         })
         const commits = data.data
             .filter((event) => {
