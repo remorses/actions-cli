@@ -111,7 +111,7 @@ const FetchCommand = {
                 workflowRuns = data.data.workflow_runs
             }
             const lastRun = workflowRuns.find((x) => {
-                const { head_sha, status, id, conclusion, workflow_url } = x
+                const { head_sha, status, id, conclusion, workflow_url,  } = x
                 // console.log({ workflow_url })
                 if (head_sha.slice(0, 7) === sha.slice(0, 7)) {
                     // console.log('found')
@@ -196,7 +196,7 @@ export async function pollJobs({ owner, repo, id, jobToFetch }) {
               })
             : data.data.jobs?.[0]
         if (!job) {
-            printRed(`Job '${jobToFetch}' not found`)
+            printRed(`Job '${jobToFetch}' not found, make sure your yaml is valid`)
             return
         }
         if (
