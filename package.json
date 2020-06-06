@@ -36,7 +36,7 @@
         "typescript": "^3.8.3"
     },
     "dependencies": {
-        "@octokit/rest": "^17.6.0",
+        "@octokit/rest": "^17.10.0",
         "@types/chalk": "^2.2.0",
         "@types/lodash": "^4.14.150",
         "@types/memoizee": "^0.4.4",

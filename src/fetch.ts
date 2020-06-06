@@ -104,7 +104,7 @@ const FetchCommand = {
                 }
                 workflowRuns = data.data.workflow_runs
             } else {
-                const data = await octokit.actions.listRepoWorkflowRuns({
+                const data = await octokit.actions.listWorkflowRunsForRepo({
                     owner,
                     repo,
                 })
