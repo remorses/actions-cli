@@ -385,12 +385,12 @@ export async function getLastCommit(args: {
     const lastNonActionsCommit = lastLocalCommits.all.find((commit) => {
         return !githubActionsCommits.includes(commit.hash.slice(0, 7))
     })
-    console.log(
-        '\n' +
-            cliSpinner.frames[0] +
-            ` found a non actions commit made from ` +
-            lastNonActionsCommit.author_name ||
-            lastNonActionsCommit.author_email,
-    )
+    // console.log(
+    //     '\n' +
+    //         cliSpinner.frames[0] +
+    //         ` found a non actions commit made from ` +
+    //         lastNonActionsCommit.author_name ||
+    //         lastNonActionsCommit.author_email,
+    // )
     return lastNonActionsCommit.hash
 }
