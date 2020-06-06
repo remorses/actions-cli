@@ -111,7 +111,7 @@ const FetchCommand = {
                 workflowRuns = data.data.workflow_runs
             }
             const lastRun = workflowRuns.find((x) => {
-                const { head_sha, status, id, conclusion, workflow_url,  } = x
+                const { head_sha, status, id, conclusion, workflow_url } = x
                 // console.log({ workflow_url })
                 if (head_sha.slice(0, 7) === sha.slice(0, 7)) {
                     // console.log('found')
@@ -196,7 +196,9 @@ export async function pollJobs({ owner, repo, id, jobToFetch }) {
               })
             : data.data.jobs?.[0]
         if (!job) {
-            printRed(`Job '${jobToFetch}' not found, make sure your yaml is valid`)
+            printRed(
+                `Job '${jobToFetch}' not found, make sure your yaml is valid`,
+            )
             return
         }
         if (
@@ -371,7 +373,12 @@ export async function getLastCommit(args: {
     const commits = await getRepoCommits({ owner, repo, octokit })
     const githubActionsCommits: string[] = flatten(
         commits
-            .filter((x) => x.actor === GITHUB_ACTIONS_BOT_LOGIN)
+            .filter((x) => {
+                if (process.env.DEBUG) {
+                    console.log('commit actor is ' + x.actor)
+                }
+                return x.actor === GITHUB_ACTIONS_BOT_LOGIN
+            })
             .map((x) => x.refs),
     ).map((x) => x.slice(0, 7))
     const lastLocalCommits = await git.log()
