@@ -341,7 +341,7 @@ const getRepoCommits = memoize(
         const data = await octokit.activity.listRepoEvents({
             owner,
             repo,
-            per_page: 20,
+            per_page: 50,
         })
         const commits = data.data
             .filter((event) => {
@@ -385,5 +385,6 @@ export async function getLastCommit(args: {
     const lastNonActionsCommit = lastLocalCommits.all.find((commit) => {
         return !githubActionsCommits.includes(commit.hash.slice(0, 7))
     })
+    console.log(`found a non actions commit made from: ` + lastNonActionsCommit.author_name || lastNonActionsCommit.author_email)
     return lastNonActionsCommit.hash
 }
