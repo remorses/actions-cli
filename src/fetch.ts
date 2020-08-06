@@ -362,7 +362,7 @@ export async function getLastCommit(args: {
     owner
     repo
     cwd
-    skipActionsCheck
+    skipActionsCheck?: boolean
 }): Promise<string> {
     if (args.skipActionsCheck) {
         return execSync('git rev-parse HEAD').toString().trim()
