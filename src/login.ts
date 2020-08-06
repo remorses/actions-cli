@@ -31,7 +31,7 @@ export default {
             firebaseConfig,
             providers: ['github'],
             scopes: {
-                github: ['notifications', 'repo'],
+                github: ['notifications', 'repo'], // TODO organizations dont work
             },
         })
         const githubToken = credentials.oauthAccessToken
