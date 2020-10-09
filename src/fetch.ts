@@ -63,10 +63,18 @@ const FetchCommand = {
             description:
                 'Double checks that the used sha was not committed by github-actions, only works for recent actions commits',
         })
+        argv.option('pushed-commit', {
+            type: 'boolean',
+            default: false,
+            alias: 'p',
+            description:
+                'Use latest pushed commit instead of using latest commit in HEAD',
+        })
     },
     handler: catchAll(async (argv) => {
         const octokit = initOctokit()
         const jobToFetch = argv.job
+        const useLatestPushedCommit = argv['pushed-commit']
         const skipActionsCheck = !argv['non-actions-commit']
         const workflowToFetch = argv.workflow
         const currentPath = path.resolve(argv.path || process.cwd())
@@ -80,6 +88,7 @@ const FetchCommand = {
                 repo,
                 cwd: currentPath,
                 skipActionsCheck,
+                useLatestPushedCommit,
             }))
         const prettySha = sha.slice(0, 7)
         changeSpinnerText({
@@ -133,6 +142,7 @@ const FetchCommand = {
                         repo,
                         cwd: currentPath,
                         skipActionsCheck,
+                        useLatestPushedCommit,
                     })
                 }
                 continue
@@ -363,12 +373,25 @@ export async function getLastCommit(args: {
     repo
     cwd
     skipActionsCheck?: boolean
+    useLatestPushedCommit: boolean
 }): Promise<string> {
-    if (args.skipActionsCheck) {
-        return execSync('git rev-parse HEAD').toString().trim()
+    if (args.useLatestPushedCommit) {
+        return execSync(`git rev-parse origin/${getCurrentBranch()}`)
+            .toString()
+            .trim()
     }
     const { owner, repo, octokit } = args
     const git = simpleGit(args.cwd)
+    const lastLocalCommits = await git.log()
+
+    if (args.skipActionsCheck) {
+        lastLocalCommits.all.find(
+            (x) =>
+                !['[no ci]', '[skip ci]', '[ci skip]'].some((m) =>
+                    x.message.toLocaleLowerCase().includes(m),
+                ),
+        )
+    }
     // console.log(JSON.stringify(data.data, null, 4))
     const commits = await getRepoCommits({ owner, repo, octokit })
     const githubActionsCommits: string[] = flatten(
@@ -381,7 +404,7 @@ export async function getLastCommit(args: {
             })
             .map((x) => x.refs),
     ).map((x) => x.slice(0, 7))
-    const lastLocalCommits = await git.log()
+
     const lastNonActionsCommit = lastLocalCommits.all.find((commit) => {
         return !githubActionsCommits.includes(commit.hash.slice(0, 7))
     })
@@ -393,4 +416,8 @@ export async function getLastCommit(args: {
     //         lastNonActionsCommit.author_email,
     // )
     return lastNonActionsCommit.hash
+}
+
+function getCurrentBranch() {
+    return execSync('git branch --show-current').toString().trim()
 }
