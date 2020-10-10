@@ -28,4 +28,4 @@ yargs
     .command(logoutCommand as any)
     .command(FetchCommand as any)
     // .demandCommand()
-    .help('h').argv
+    .help('help').argv
